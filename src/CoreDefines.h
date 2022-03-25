@@ -1,0 +1,7 @@
+#pragma once
+
+#define SCREEN_WIDTH 600
+#define SCREEN_HEIGHT 860
+
+#define SPLASH_STATE_SHOW_TIME 1.5
+#define SPLASH_SCENE_BACKGROUND_FILEPATH "res/Logo.png"
