@@ -4,14 +4,14 @@
 #include "State.h"
 #include "Game.h"
 
-
 namespace Blink
 {
-	class SplashState : public State
+	class MainMenuState : public State
 	{
 	public:
-		SplashState(GameDataSptr d) : data(d) {}
-		~SplashState();
+
+		MainMenuState(GameDataSptr d) : data(d) {}
+		~MainMenuState() {}
 
 		void Init();
 
@@ -21,9 +21,12 @@ namespace Blink
 
 	private:
 		GameDataSptr data;
-		
+
 		sf::Clock clock;
 
-		sf::RectangleShape  backGround;
+		sf::Sprite  backGround;
+		sf::Sprite  title;
+		sf::Sprite  playButton;
+		sf::Sprite  playButtonOuter;
 	};
 }

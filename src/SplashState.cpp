@@ -1,21 +1,18 @@
 #include <sstream>
 #include <iostream>
 #include "SplashState.h"
+#include "MainMenuState.h"
 #include "CoreDefines.h"
 #include <SFML/Graphics.hpp>
 
 namespace Blink
 {
 
-	SplashState::SplashState(GameDataSptr d) : data(d)
-	{
-	}
-
 	void SplashState::Init()
 	{
 		this->data->assetMgr.LoadTexture("Splash State Background", SPLASH_SCENE_BACKGROUND_FILEPATH);
-		backGround.setTexture(this->data->assetMgr.GetTexture("Splash State Background"));
-		backGround.setTextureRect(sf::IntRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT));
+		backGround.setTexture(&this->data->assetMgr.GetTexture("Splash State Background"));
+		backGround.setSize(sf::Vector2f(SCREEN_WIDTH, SCREEN_HEIGHT));
 	}
 
 	void SplashState::HandleInput()
@@ -36,14 +33,16 @@ namespace Blink
 		if (this->clock.getElapsedTime().asSeconds() > SPLASH_STATE_SHOW_TIME)
 		{
 			// Switch to next state
-			std::cout << "Go to main menu" << std::endl;
+			this->data->machine.AddState(StateUptr(new MainMenuState(data)), true);
 		}
 	}
 
 	void SplashState::Draw(float deltaTime)
 	{
 		this->data->window.clear(sf::Color::Yellow);
+
 		this->data->window.draw(this->backGround);
+
 		this->data->window.display();
 	}
 }
