@@ -22,8 +22,6 @@ namespace Blink
 	private:
 		GameDataSptr data;
 
-		sf::Clock clock;
-
 		sf::Sprite  backGround;
 		sf::Sprite  title;
 		sf::Sprite  playButton;
