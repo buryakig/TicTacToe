@@ -27,7 +27,7 @@ namespace Blink
 		void Run();
 
 	private:
-		const float deltaTime = 1.0f / 60.0f;
+		const float deltaTime = 0.1f;
 		sf::Clock clock;
 
 		GameDataSptr data = std::make_shared<GameData>();

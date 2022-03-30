@@ -18,7 +18,9 @@ namespace Blink
 		void Draw(float deltaTime);
 
 	private:
-		void  InitGridPieces();
+		void InitGridPieces();
+		void CheckAndPlacePiece();
+		bool CheckWinningCondition(int column, int row, int turn);
 
 		GameDataSptr data;
 
