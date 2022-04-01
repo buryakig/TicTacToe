@@ -4,6 +4,7 @@
 
 namespace Blink
 {
+
 	class GameOverState : public State
 	{
 	public:
@@ -19,6 +20,7 @@ namespace Blink
 
 	private:
 		GameDataSptr data; 
+
 
 		sf::Sprite  retryButton;
 		sf::Sprite  homeButton;

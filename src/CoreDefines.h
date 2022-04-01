@@ -33,8 +33,8 @@
 // States
 #define STATE_PLAYING 100
 #define STATE_PAUSED 99
-#define STATE_WON 98
-#define STATE_LOSE 97
+#define X_WON 98
+#define O_WON 97
 #define STATE_PLACING_PIECE 96
 #define STATE_AI_PLAYING 95
 #define STATE_DRAW 94

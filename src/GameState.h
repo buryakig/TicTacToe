@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Game.h"
+#include "AI.h"
 
 namespace Blink
 {
@@ -20,7 +21,11 @@ namespace Blink
 	private:
 		void InitGridPieces();
 		void CheckAndPlacePiece();
-		bool CheckWinningCondition(int column, int row, int turn);
+		void ProceedIfWon(int column, int row);
+		void ProceedIfDraw();
+		bool CheckWinningCondition(int column, int row);
+
+		AI aiPlayer;
 
 		GameDataSptr data;
 
@@ -30,9 +35,13 @@ namespace Blink
 		sf::Sprite  gridSprite;
 		
 		sf::Sprite  gridPieces[3][3];
+		
+		sf::Vector2i winningBlocks[3];
+
 		int gridArray[3][3];
 
 		int turn;
 		int gameState;
+		int numEmptyCells;
 	};
 }

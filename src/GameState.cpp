@@ -37,6 +37,13 @@ namespace Blink
 
 
 		InitGridPieces();
+
+
+		std::cout << gridArray[0][0] << '\t' << gridArray[1][0] << '\t' << gridArray[2][0] << '\n'
+					<< gridArray[0][1] << '\t' << gridArray[1][1] << '\t' << gridArray[2][1] << '\n'
+					<< gridArray[0][2] << '\t' << gridArray[1][2] << '\t' << gridArray[2][2] << '\n' << '\n';
+
+		aiPlayer = AI(gridArray);
 	}
 
 	void GameState::HandleInput()
@@ -54,7 +61,7 @@ namespace Blink
 			{
 				this->data->machine.AddState(StateUptr(new PauseState(this->data)), false);
 			}
-			else if (this->data->inputMgr.IsSpriteClicked(this->gridSprite, sf::Mouse::Left, this->data->window))
+			else if (this->data->inputMgr.IsSpriteClicked(this->gridSprite, sf::Mouse::Left, this->data->window) || turn == AI_PIECE)
 			{
 				if(gameState == STATE_PLAYING)
 					this->CheckAndPlacePiece();
@@ -100,70 +107,149 @@ namespace Blink
 			for (int y = 0; y < 3; ++y)
 			{
 				gridArray[x][y] = EMPTY_PIECE;
-				gridPieces[x][y].setPosition(gridSprite.getPosition().x + tempSpriteSize.x * x - 7,
-					gridSprite.getPosition().y + tempSpriteSize.y * y - 7);
+				gridPieces[x][y].setPosition(gridSprite.getPosition().x + tempSpriteSize.x * x - 6.5,
+					gridSprite.getPosition().y + tempSpriteSize.y * y - 6);
 				gridPieces[x][y].setColor(sf::Color::White);
 			}
 		}
+
+		numEmptyCells = 9;
 	}
 
 
 	void GameState::CheckAndPlacePiece()
 	{
-		sf::Vector2i touchPoint = this->data->inputMgr.GetMousePosition(this->data->window);
-		sf::FloatRect gridSize = gridSprite.getGlobalBounds();
-		sf::Vector2f gapOutsideOfGrid = sf::Vector2f((SCREEN_WIDTH - gridSize.width) / 2, (SCREEN_HEIGHT - gridSize.height) / 2);
-		sf::Vector2f gridLocalTouchPos = sf::Vector2f(touchPoint.x - gapOutsideOfGrid.x, touchPoint.y - gapOutsideOfGrid.y);
-		sf::Vector2f gridSectionSize = sf::Vector2f(gridSize.width / 3, gridSize.height / 3 );
+		int column, row;
+		if (turn == PLAYER_PIECE)
+		{
+			sf::Vector2i touchPoint = this->data->inputMgr.GetMousePosition(this->data->window);
+			sf::FloatRect gridSize = gridSprite.getGlobalBounds();
+			sf::Vector2f gapOutsideOfGrid = sf::Vector2f((SCREEN_WIDTH - gridSize.width) / 2, (SCREEN_HEIGHT - gridSize.height) / 2);
+			sf::Vector2f gridLocalTouchPos = sf::Vector2f(touchPoint.x - gapOutsideOfGrid.x, touchPoint.y - gapOutsideOfGrid.y);
+			sf::Vector2f gridSectionSize = sf::Vector2f(gridSize.width / 3, gridSize.height / 3);
 
-		int column = gridLocalTouchPos.x / gridSectionSize.x;
-		int row = gridLocalTouchPos.y / gridSectionSize.y;
+			column = gridLocalTouchPos.x / gridSectionSize.x;
+			row = gridLocalTouchPos.y / gridSectionSize.y;
+		}
+		else if (turn == AI_PIECE)
+		{
+			sf::Vector2i cr = aiPlayer.CalculateMove(turn, &gridArray);
+			column = cr.x;
+			row = cr.y;
+
+			std::cout << "col = " << column << std::endl;
+			std::cout << "row = " << row << std::endl;
+		}
+
 
 		if (gridArray[column][row] == EMPTY_PIECE)
 		{
 			gridArray[column][row] = turn;
 
+
 			if (PLAYER_PIECE == turn)
 			{
 				gridPieces[column][row].setTexture(this->data->assetMgr.GetTexture("X Piece"));
-				if (CheckWinningCondition(column, row, turn))
-				{
 
-				}
+				ProceedIfWon(column, row);
+				ProceedIfDraw();
 
 				turn = AI_PIECE;
+
 			}
 			else if(AI_PIECE == turn)
 			{
 				gridPieces[column][row].setTexture(this->data->assetMgr.GetTexture("O Piece"));
-				if (CheckWinningCondition(column, row, turn))
-				{
-
-				}
+				
+				ProceedIfWon(column, row);
+				ProceedIfDraw();
 
 				turn = PLAYER_PIECE;
 			}
 
-			gridPieces[column][row].setColor(sf::Color(255, 255, 255));
+			//gridPieces[column][row].setColor(sf::Color(255, 255, 255));
 		}
 	}
 
-	bool GameState::CheckWinningCondition(int column, int row, int turn)
+	void GameState::ProceedIfWon(int column, int row)
 	{
-		bool flag = true;
+		if (CheckWinningCondition(column, row))
+		{
+			std::string texName = "- Winning Piece";
+			if (turn == PLAYER_PIECE)
+			{
+				texName[0] = 'X';
+				gameState = X_WON;
+			}
+			else if (turn == AI_PIECE)
+			{
+				texName[0] = 'O';
+				gameState = O_WON;
+			}
+			for (const auto& blck : winningBlocks)
+				gridPieces[blck.x][blck.y].setTexture(this->data->assetMgr.GetTexture(texName));
+		}
+	}
+
+	void GameState::ProceedIfDraw()
+	{
+		--numEmptyCells;
+		if (numEmptyCells == 0 && gameState == STATE_PLAYING)
+		{
+			gameState = STATE_DRAW;
+		}
+	}
+
+	bool GameState::CheckWinningCondition(int column, int row)
+	{
+		bool flag = false;
 		if (column == row)
 			flag = gridArray[0][0] == turn && gridArray[1][1] == turn && gridArray[2][2] == turn;
+
+		if (flag)
+		{
+			winningBlocks[0] = sf::Vector2i(0, 0);
+			winningBlocks[1] = sf::Vector2i(1, 1);
+			winningBlocks[2] = sf::Vector2i(2, 2);
+
+			return flag;
+		}
 
 		if (column == 2 - row || row == 2 - column)
 			flag = gridArray[2][0] == turn && gridArray[1][1] == turn && gridArray[0][2] == turn;
 
+		if (flag)
+		{
+			winningBlocks[0] = sf::Vector2i(2, 0);
+			winningBlocks[1] = sf::Vector2i(1, 1);
+			winningBlocks[2] = sf::Vector2i(0, 2);
+
+			return flag;
+		}
+
 		flag = true;
 		for (int i = 0; i < 3; ++i)
 			flag &= (gridArray[column][i] == turn);
+
+		if (flag)
+		{
+			for (int i = 0; i < 3; ++i)
+				winningBlocks[i] = sf::Vector2i(column, i);
+
+			return flag;
+		}
 		
 		flag = true;
 		for (int i = 0; i < 3; ++i)
 			flag &= (gridArray[i][row] == turn);
+
+		if (flag)
+		{
+			for (int i = 0; i < 3; ++i)
+				winningBlocks[i] = sf::Vector2i(i, row);
+
+			return flag;
+		}
 
 		return flag;
 	}
